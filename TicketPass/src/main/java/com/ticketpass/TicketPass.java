@@ -1,3 +1,9 @@
+package com.ticketpass;
+
+import com.ticketpass.controller.*;
+import com.ticketpass.util.*;
+import com.ticketpass.model.*;
+
 import java.util.List;
 import java.util.Date;
 import java.io.File;
@@ -40,10 +46,6 @@ public class TicketPass {
         return browsingService.searchEvents(category, date, location, price, artist);
     }
 
-    public EventDetails getEventDetails(int eventId) {
-        return browsingService.getEventDetails(eventId);
-    }
-
     public File getSeatingChart(int eventId) {
         return reservationService.getSeatingChart(eventId);
     }
@@ -72,13 +74,13 @@ public class TicketPass {
     }
 
     public void createNewEvent(User currentUser, Event eventData) {
-        if (currentUser != null && "Admin".equalsIgnoreCase(currentUser.getRole())) {
+        if (currentUser != null && "Admin".equalsIgnoreCase(currentUser.getRole().toString())) {
             adminService.createEvent(currentUser.getId(), eventData);
         }
     }
 
     public Report viewSalesReport(User currentUser) {
-        if (currentUser != null && "Admin".equalsIgnoreCase(currentUser.getRole())) {
+        if (currentUser != null && "Admin".equalsIgnoreCase(currentUser.getRole().toString())) {
             return reportingService.generateSalesReport(currentUser.getId());
         }
         return null;

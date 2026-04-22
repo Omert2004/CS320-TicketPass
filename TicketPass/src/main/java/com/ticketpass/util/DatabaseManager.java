@@ -1,8 +1,13 @@
+package com.ticketpass.util;
+
+import com.ticketpass.model.User;
+import com.ticketpass.model.Role;
+
 import java.sql.*;
 
 public class DatabaseManager {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/ecommerce_db";
+    private static final String URL = "jdbc:mysql://localhost:3306/ticketpass_db";
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
@@ -17,7 +22,7 @@ public class DatabaseManager {
 
     public static User authenticate(String username, String password) {
         String hashedPassword = PasswordHasher.hashPassword(password);
-        String query = "SELECT UserID, Username, UserRole, FirstName, LastName FROM USERS WHERE Username = ? AND PasswordHash = ?";
+        String query = "SELECT UserID, FirstName, LastName, Username, Email, PasswordHash, UserRole, IsLocked, FailedAttempts FROM USERS WHERE Username = ? AND PasswordHash = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -28,12 +33,19 @@ public class DatabaseManager {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
+                Role userRole = Role.valueOf(rs.getString("UserRole").toUpperCase());
+
                 return new User(
                         rs.getInt("UserID"),
-                        rs.getString("Username"),
-                        rs.getString("UserRole"),
                         rs.getString("FirstName"),
-                        rs.getString("LastName"));
+                        rs.getString("LastName"),
+                        rs.getString("Username"),
+                        rs.getString("Email"),
+                        rs.getString("PasswordHash"),
+                        userRole,
+                        rs.getBoolean("IsLocked"),
+                        rs.getInt("FailedAttempts")
+                );
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -52,7 +64,7 @@ public class DatabaseManager {
             pstmt.setString(1, username);
             pstmt.setString(2, email);
             pstmt.setString(3, hashedPassword);
-            pstmt.setString(4, role);
+            pstmt.setString(4, role.toUpperCase()); // Update this line to ensure uppercase
             pstmt.setString(5, firstName);
             pstmt.setString(6, lastName);
 

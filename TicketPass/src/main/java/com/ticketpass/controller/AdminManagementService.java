@@ -1,3 +1,7 @@
+package com.ticketpass.controller;
+
+import com.ticketpass.model.Event;
+
 public class AdminManagementService {
 
     public void createEvent(int adminId, Event eventData) {

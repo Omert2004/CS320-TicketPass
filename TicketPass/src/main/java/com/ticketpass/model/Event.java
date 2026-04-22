@@ -1,3 +1,5 @@
+package com.ticketpass.model;
+
 import java.util.Date;
 
 public class Event {

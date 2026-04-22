@@ -1,3 +1,8 @@
+package com.ticketpass.controller;
+
+import com.ticketpass.model.Report;
+import com.ticketpass.model.EventStats;
+
 public class ReportingService {
 
     public Report generateSalesReport(int adminId) {

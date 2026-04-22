@@ -1,3 +1,5 @@
+package com.ticketpass.controller;
+
 import java.io.File;
 
 public class SeatReservationService {

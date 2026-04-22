@@ -1,3 +1,6 @@
+package com.ticketpass.controller;
+
+import com.ticketpass.model.Booking;
 import java.util.ArrayList;
 import java.util.List;
 

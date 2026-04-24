@@ -1,52 +1,34 @@
 package com.ticketpass.model;
 
 public class User {
-    private int id;
-    private String firstName;
-    private String lastName;
+    private int userId;
     private String username;
     private String email;
     private String passwordHash;
     private Role role;
     private boolean isLocked;
     private int failedAttempts;
+    private LocalDateTime createdAt;
 
     public User() {}
 
-    public User(int id, String firstName, String lastName, String username, String email, String passwordHash, Role role, boolean isLocked, int failedAttempts) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public User(int userId, String username, String email, String passwordHash, Role role, boolean isLocked, int failedAttempts, LocalDateTime createdAt) {
+        this.userId = userId;
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
         this.role = role;
         this.isLocked = isLocked;
         this.failedAttempts = failedAttempts;
+        this.createdAt = createdAt;
     }
 
-    public int getId() {
-        return id;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getUsername() {
@@ -95,5 +77,13 @@ public class User {
 
     public void setFailedAttempts(int failedAttempts) {
         this.failedAttempts = failedAttempts;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

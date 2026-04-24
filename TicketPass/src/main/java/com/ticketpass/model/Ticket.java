@@ -4,21 +4,25 @@ import java.time.LocalDateTime;
 
 public class Ticket {
     private int ticketId;
-    private int transactionId;
+    private int userId;
     private int eventId;
     private int seatId;
-    private String qrCodeData;
-    private String status;
+    private int transactionId;
     private LocalDateTime purchaseTime;
+    private String qrCode;
+    private String pdfPath;
 
-    public Ticket(int ticketId, int transactionId, int eventId, int seatId, String qrCodeData, LocalDateTime purchaseTime) {
+    public Ticket() {}
+
+    public Ticket(int ticketId, int userId, int eventId, int seatId, int transactionId, LocalDateTime purchaseTime, String qrCode, String pdfPath) {
         this.ticketId = ticketId;
-        this.transactionId = transactionId;
+        this.userId = userId;
         this.eventId = eventId;
         this.seatId = seatId;
-        this.qrCodeData = qrCodeData;
-        this.status = "VALID";
+        this.transactionId = transactionId;
         this.purchaseTime = purchaseTime;
+        this.qrCode = qrCode;
+        this.pdfPath = pdfPath;
     }
 
     public int getTicketId() {
@@ -29,12 +33,12 @@ public class Ticket {
         this.ticketId = ticketId;
     }
 
-    public int getTransactionId() {
-        return transactionId;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setTransactionId(int transactionId) {
-        this.transactionId = transactionId;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public int getEventId() {
@@ -53,20 +57,12 @@ public class Ticket {
         this.seatId = seatId;
     }
 
-    public String getQrCodeData() {
-        return qrCodeData;
+    public int getTransactionId() {
+        return transactionId;
     }
 
-    public void setQrCodeData(String qrCodeData) {
-        this.qrCodeData = qrCodeData;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
+    public void setTransactionId(int transactionId) {
+        this.transactionId = transactionId;
     }
 
     public LocalDateTime getPurchaseTime() {
@@ -75,5 +71,21 @@ public class Ticket {
 
     public void setPurchaseTime(LocalDateTime purchaseTime) {
         this.purchaseTime = purchaseTime;
+    }
+
+    public String getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
+    }
+
+    public String getPdfPath() {
+        return pdfPath;
+    }
+
+    public void setPdfPath(String pdfPath) {
+        this.pdfPath = pdfPath;
     }
 }

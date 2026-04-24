@@ -8,25 +8,27 @@ public class Event {
     private String name;
     private String category;
     private LocalDateTime eventDate;
+    private String address;
     private String venueName;
     private int venueCapacity;
-    private String location;
-    private float price;
+    private double price;
     private EventStatus status;
+    private LocalDateTime createdAt;
 
     public Event() {}
 
-    public Event(int eventId, int organizerId, String name, String category, LocalDateTime eventDate, String venueName, int venueCapacity, String location, float price, EventStatus status) {
+    public Event(int eventId, int organizerId, String name, String category, LocalDateTime eventDate, String address, String venueName, int venueCapacity, double price, EventStatus status, LocalDateTime createdAt) {
         this.eventId = eventId;
         this.organizerId = organizerId;
         this.name = name;
         this.category = category;
         this.eventDate = eventDate;
+        this.address = address;
         this.venueName = venueName;
         this.venueCapacity = venueCapacity;
-        this.location = location;
         this.price = price;
         this.status = status;
+        this.createdAt = createdAt;
     }
 
     public int getEventId() {
@@ -69,6 +71,14 @@ public class Event {
         this.eventDate = eventDate;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public String getVenueName() {
         return venueName;
     }
@@ -85,19 +95,11 @@ public class Event {
         this.venueCapacity = venueCapacity;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public float getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(float price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 
@@ -107,5 +109,13 @@ public class Event {
 
     public void setStatus(EventStatus status) {
         this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

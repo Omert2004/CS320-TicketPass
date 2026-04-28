@@ -48,10 +48,27 @@ public class RegisterWindow extends JFrame {
         add(mainPanel);
 
         btnRegister.addActionListener(e -> {
-            String user = txtUser.getText();
-            String email = txtEmail.getText();
-            String pass = new String(txtPass.getPassword());
+            String user = txtUser.getText().trim();
+            String email = txtEmail.getText().trim();
+            String pass = new String(txtPass.getPassword()).trim();
             String role = cbRole.getSelectedItem().toString();
+
+            if (user.isEmpty() || email.isEmpty() || pass.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Please fill in all fields (Username, Email, and Password).",
+                        "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+            if (!email.matches(emailRegex)) {
+                JOptionPane.showMessageDialog(this,
+                        "Please enter a valid email address (e.g., user@example.com).",
+                        "Invalid Email Format",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
             boolean success = ticketPass.register(user, email, pass, role);
 

@@ -87,8 +87,25 @@ public class LoginWindow extends JFrame {
             User user = ticketPass.login(username, password);
 
             if (user != null) {
-                //new DashboardWindow(ticketPass, user).setVisible(true);
-                //dispose();
+                switch (user.getRole()) {
+                    case CUSTOMER:
+                        new CustomerDashboardWindow(ticketPass, user).setVisible(true);
+                        break;
+                    case ORGANIZER:
+                        // TODO: Create the OrganizerDashboardWindow
+                        // new OrganizerDashboardWindow(ticketPass, user).setVisible(true);
+                        JOptionPane.showMessageDialog(this, "Welcome Organizer! Dashboard coming soon.");
+                        break;
+                    case ADMIN:
+                        // TODO: Create the AdminDashboardWindow
+                        // new AdminDashboardWindow(ticketPass, user).setVisible(true);
+                        JOptionPane.showMessageDialog(this, "Welcome Admin! Dashboard coming soon.");
+                        break;
+                    default:
+                        JOptionPane.showMessageDialog(this, "Unknown role detected.");
+                        return;
+                }
+                dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid credentials or account locked.", "Error", JOptionPane.ERROR_MESSAGE);
             }

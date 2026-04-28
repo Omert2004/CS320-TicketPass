@@ -5,10 +5,7 @@ import com.ticketpass.util.DatabaseManager;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.UUID;
 
 public class PaymentAndTicketingService {
@@ -55,6 +52,26 @@ public class PaymentAndTicketingService {
             e.printStackTrace();
         }
         return ticketId;
+    }
+
+    public String getTransactionStatus(int transactionId) {
+        String status = "FAILED";
+        String query = "{CALL sp_getTransactionStatus(?)}";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query)) {
+
+            stmt.setInt(1, transactionId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    status = rs.getString("status");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return status;
     }
 
     public boolean retryPayment(int transactionId, String newPaymentToken) {

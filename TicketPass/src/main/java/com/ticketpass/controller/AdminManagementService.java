@@ -1,12 +1,13 @@
 package com.ticketpass.controller;
 
 import com.ticketpass.model.Event;
+import com.ticketpass.model.Role;
+import com.ticketpass.model.User;
 import com.ticketpass.util.DatabaseManager;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminManagementService {
 
@@ -62,6 +63,32 @@ public class AdminManagementService {
         }
     }
 
+    public void approveEvent(int adminId, int eventId) {
+        String query = "{CALL sp_approveEvent(?, ?)}";
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query)) {
+
+            stmt.setInt(1, adminId);
+            stmt.setInt(2, eventId);
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteEvent(int adminId, int eventId) {
+        String query = "{CALL sp_deleteEvent(?, ?)}";
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query)) {
+
+            stmt.setInt(1, adminId);
+            stmt.setInt(2, eventId);
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void updateSeatAvailability(int adminId, int seatId, String status) {
         String query = "{CALL sp_updateSeatAvailability(?, ?, ?)}";
         try (Connection conn = DatabaseManager.getConnection();
@@ -74,5 +101,33 @@ public class AdminManagementService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String query = "{CALL sp_getUserList()}";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Role userRole = Role.valueOf(rs.getString("role").toUpperCase());
+                User user = new User(
+                        rs.getInt("userId"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        null,
+                        userRole,
+                        rs.getBoolean("isLocked"),
+                        rs.getInt("failedAttempts"),
+                        null // CreatedAt can be mapped if added to User model
+                );
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 }

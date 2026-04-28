@@ -14,12 +14,16 @@ public class TicketPass {
     private EventBrowsingService browsingService;
     private SeatReservationService reservationService;
     private PaymentAndTicketingService paymentService;
+    private QRCodeService qrCodeService;
+    private PdfTicketService pdfTicketService;
     private AdminManagementService adminService;
     private ReportingService reportingService;
     private BookingHistoryService historyService;
 
+
     public TicketPass(EventBrowsingService browsing,
                       SeatReservationService reservation, PaymentAndTicketingService payment,
+                      QRCodeService qrService, PdfTicketService pdfService,
                       AdminManagementService admin, ReportingService reporting,
                       BookingHistoryService history) {
         this.browsingService = browsing;
@@ -28,6 +32,8 @@ public class TicketPass {
         this.adminService = admin;
         this.reportingService = reporting;
         this.historyService = history;
+        this.qrCodeService = new QRCodeService(history);
+        this.pdfTicketService = new PdfTicketService(qrService, history);
     }
 
     public User login(String username, String password) {
@@ -73,20 +79,20 @@ public class TicketPass {
         reservationService.releaseSeatLock(seatId);
     }
 
-    public int processPayment(int userId, String lastFourDigits, String paymentToken) {
-        return paymentService.processPayment(userId, lastFourDigits, paymentToken);
+    public int processPayment(int userId, String lastFourDigits, String paymentToken, String status) {
+        return paymentService.processPayment(userId, lastFourDigits, paymentToken, status);
     }
 
     public int generateTicketFlow(int userId, int eventId, int seatId, int transactionId) {
         return paymentService.generateTicketRecord(userId, eventId, seatId, transactionId);
     }
 
-    public File downloadTicketPDF(int ticketId) {
-        return paymentService.generatePDFTicket(ticketId);
+    public File downloadTicketPDF(int userId, int ticketId) {
+        return pdfTicketService.generatePDFTicket(userId, ticketId);
     }
 
-    public Image viewTicketQRCode(int ticketId) {
-        return paymentService.generateQRCode(ticketId);
+    public Image viewTicketQRCode(int userId, int ticketId) {
+        return qrCodeService.generateQRCode(userId, ticketId);
     }
 
     public List<Booking> viewBookingHistory(int userId) {

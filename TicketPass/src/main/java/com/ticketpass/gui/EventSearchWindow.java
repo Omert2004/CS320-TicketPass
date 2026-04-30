@@ -38,13 +38,10 @@ public class EventSearchWindow extends JFrame {
 
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         JComboBox<String> cbCategory = new JComboBox<>(new String[]{"All Categories", "Football", "Music", "Theater", "Comedy"});
-        JTextField txtArtist = new JTextField(15);
         JTextField txtLocation = new JTextField(15);
 
         row1.add(new JLabel("Category:"));
         row1.add(cbCategory);
-        row1.add(new JLabel("Artist/Team:"));
-        row1.add(txtArtist);
         row1.add(new JLabel("Location:"));
         row1.add(txtLocation);
 
@@ -114,10 +111,9 @@ public class EventSearchWindow extends JFrame {
             String category = cbCategory.getSelectedItem().toString();
             if (category.equals("All Categories")) category = null;
 
-            String artist = txtArtist.getText().trim().isEmpty() ? null : txtArtist.getText().trim();
             String location = txtLocation.getText().trim().isEmpty() ? null : txtLocation.getText().trim();
 
-            double price = 0.0;
+            double price = Double.MAX_VALUE;
             if (!txtPrice.getText().trim().isEmpty()) {
                 try {
                     price = Double.parseDouble(txtPrice.getText().trim());
@@ -137,7 +133,7 @@ public class EventSearchWindow extends JFrame {
                 }
             }
 
-            loadResults(category, searchDate, location, price, artist);
+            loadResults(category, searchDate, location, price, null);
         });
 
         btnBack.addActionListener(e -> {
@@ -155,16 +151,30 @@ public class EventSearchWindow extends JFrame {
                 JOptionPane.showMessageDialog(this, "Please select an event from the search results.", "No Selection", JOptionPane.WARNING_MESSAGE);
             }
         });
+
+        btnSearch.doClick();
     }
 
     private void loadResults(String category, Date date, String location, double price, String artist) {
         tableModel.setRowCount(0);
 
-        List<Event> results = ticketPass.searchEvents(category, date, location, price, artist);
+        List<Event> dbResults = ticketPass.searchEvents(category, date, null, price, artist);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm");
 
-        for (Event event : results) {
+        for (Event event : dbResults) {
+
+            if (location != null && !location.trim().isEmpty()) {
+                String searchTarget = location.toLowerCase().trim();
+
+                String venueName = event.getVenueName() != null ? event.getVenueName().toLowerCase() : "";
+                String address = event.getAddress() != null ? event.getAddress().toLowerCase() : "";
+
+                if (!venueName.contains(searchTarget) && !address.contains(searchTarget)) {
+                    continue;
+                }
+            }
+
             tableModel.addRow(new Object[]{
                     event.getEventId(),
                     event.getName(),

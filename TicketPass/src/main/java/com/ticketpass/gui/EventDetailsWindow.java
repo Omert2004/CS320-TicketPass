@@ -85,9 +85,8 @@ public class EventDetailsWindow extends JFrame {
         });
 
         btnSelectSeats.addActionListener(e -> {
-            // TODO: Implement seatselection window
-            //new SeatSelectionWindow(ticketPass, user, eventId).setVisible(true);
-            //dispose();
+            new SeatingChartWindow(ticketPass, user, eventId).setVisible(true);
+            dispose();
         });
     }
 

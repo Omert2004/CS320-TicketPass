@@ -103,7 +103,7 @@ public class CustomerDashboardWindow extends JFrame {
             int selectedRow = eventTable.getSelectedRow();
             if (selectedRow >= 0) {
                 int selectedEventId = (int) tableModel.getValueAt(selectedRow, 0);
-                // TODO: EventDetailsWindow
+
                 new EventDetailsWindow(ticketPass, currentUser, selectedEventId).setVisible(true);
                 dispose();
             } else {
@@ -117,7 +117,9 @@ public class CustomerDashboardWindow extends JFrame {
         });
 
         btnMyBookings.addActionListener(e -> {
-            // TODO: BookingHistoryWindow
+            new BookingHistoryWindow(ticketPass, currentUser).setVisible(true);
+
+            dispose();
         });
 
         loadUpcomingEvents();

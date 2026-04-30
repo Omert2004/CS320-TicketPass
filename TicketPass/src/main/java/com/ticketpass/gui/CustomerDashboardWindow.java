@@ -104,17 +104,16 @@ public class CustomerDashboardWindow extends JFrame {
             if (selectedRow >= 0) {
                 int selectedEventId = (int) tableModel.getValueAt(selectedRow, 0);
                 // TODO: EventDetailsWindow
-                //new EventDetailsWindow(ticketPass, currentUser, selectedEventId).setVisible(true);
-                //dispose();
+                new EventDetailsWindow(ticketPass, currentUser, selectedEventId).setVisible(true);
+                dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Please select an event from the list first!", "No Selection", JOptionPane.WARNING_MESSAGE);
             }
         });
 
         btnSearchEvents.addActionListener(e -> {
-            // TODO: EventSearchWindow
-            //new EventSearchWindow(ticketPass, currentUser).setVisible(true);
-            //dispose();
+            new EventSearchWindow(ticketPass, currentUser).setVisible(true);
+            dispose();
         });
 
         btnMyBookings.addActionListener(e -> {

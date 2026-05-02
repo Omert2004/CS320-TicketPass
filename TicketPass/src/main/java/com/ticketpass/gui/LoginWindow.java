@@ -92,8 +92,7 @@ public class LoginWindow extends JFrame {
                         new CustomerDashboardWindow(ticketPass, user).setVisible(true);
                         break;
                     case ORGANIZER:
-                        // TODO: Create the OrganizerDashboardWindow
-                        // new OrganizerDashboardWindow(ticketPass, user).setVisible(true);
+                        new OrganizerDashboardWindow(ticketPass, user).setVisible(true);
                         JOptionPane.showMessageDialog(this, "Welcome Organizer! Dashboard coming soon.");
                         break;
                     case ADMIN:

@@ -7,9 +7,9 @@ import java.sql.*;
 
 public class DatabaseManager {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/ticketpass_db";
+    private static final String URL = "jdbc:mysql://localhost:3306/ticketpass";
     private static final String USER = "root";
-    private static final String PASSWORD = "";
+    private static final String PASSWORD = "**Aa445566";
 
     public static Connection getConnection() throws SQLException {
         try {
@@ -22,29 +22,29 @@ public class DatabaseManager {
 
     public static User authenticate(String username, String password) {
         String hashedPassword = PasswordHasher.hashPassword(password);
-        String query = "SELECT UserID, FirstName, LastName, Username, Email, PasswordHash, UserRole, IsLocked, FailedAttempts FROM USERS WHERE Username = ? AND PasswordHash = ?";
+
+        String query = "{CALL sp_login(?, ?)}";
 
         try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+             CallableStatement cstmt = conn.prepareCall(query)) {
 
-            pstmt.setString(1, username);
-            pstmt.setString(2, hashedPassword);
+            cstmt.setString(1, username);
+            cstmt.setString(2, hashedPassword);
 
-            ResultSet rs = pstmt.executeQuery();
+            ResultSet rs = cstmt.executeQuery();
 
             if (rs.next()) {
-                Role userRole = Role.valueOf(rs.getString("UserRole").toUpperCase());
+                Role userRole = Role.valueOf(rs.getString("role").toUpperCase());
 
                 return new User(
-                        rs.getInt("UserID"),
-                        rs.getString("FirstName"),
-                        rs.getString("LastName"),
-                        rs.getString("Username"),
-                        rs.getString("Email"),
-                        rs.getString("PasswordHash"),
+                        rs.getInt("userId"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        hashedPassword,
                         userRole,
-                        rs.getBoolean("IsLocked"),
-                        rs.getInt("FailedAttempts")
+                        rs.getBoolean("isLocked"),
+                        rs.getInt("failedAttempts"),
+                        null
                 );
             }
         } catch (SQLException e) {
@@ -53,10 +53,10 @@ public class DatabaseManager {
         return null;
     }
 
-    public static boolean registerUser(String username, String email, String password, String role, String firstName,
-                                       String lastName) {
+    public static boolean registerUser(String username, String email, String password, String role) {
         String hashedPassword = PasswordHasher.hashPassword(password);
-        String query = "INSERT INTO USERS (Username, Email, PasswordHash, UserRole, FirstName, LastName) VALUES (?, ?, ?, ?, ?, ?)";
+
+        String query = "INSERT INTO users (username, email, passwordHash, role) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -64,9 +64,7 @@ public class DatabaseManager {
             pstmt.setString(1, username);
             pstmt.setString(2, email);
             pstmt.setString(3, hashedPassword);
-            pstmt.setString(4, role.toUpperCase()); // Update this line to ensure uppercase
-            pstmt.setString(5, firstName);
-            pstmt.setString(6, lastName);
+            pstmt.setString(4, role.toUpperCase());
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -81,4 +79,33 @@ public class DatabaseManager {
         }
     }
 
+    public static void incrementFailedAttempts(int userId) {
+        try (Connection conn = getConnection();
+             CallableStatement cstmt = conn.prepareCall("{CALL sp_incrementFailedAttempts(?)}")) {
+            cstmt.setInt(1, userId);
+            cstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void resetFailedAttempts(int userId) {
+        try (Connection conn = getConnection();
+             CallableStatement cstmt = conn.prepareCall("{CALL sp_resetFailedAttempts(?)}")) {
+            cstmt.setInt(1, userId);
+            cstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void lockAccount(int userId) {
+        try (Connection conn = getConnection();
+             CallableStatement cstmt = conn.prepareCall("{CALL sp_lockAccount(?)}")) {
+            cstmt.setInt(1, userId);
+            cstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

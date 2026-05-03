@@ -27,7 +27,7 @@ public class SeatingChartWindow extends JFrame {
     private final Color COLOR_LOCKED = new Color(255, 193, 7);
     private final Color COLOR_SOLD = new Color(108, 117, 125);
     private final Color COLOR_SELECTED = new Color(0, 123, 255);
-    private final Color COLOR_BLOCKED = new Color(220, 53, 69); // Red for Organizer Blocked
+    private final Color COLOR_BLOCKED = new Color(220, 53, 69);
 
     public SeatingChartWindow(TicketPass ticketPass, User currentUser, int eventId) {
         this.ticketPass = ticketPass;
@@ -97,9 +97,14 @@ public class SeatingChartWindow extends JFrame {
         add(mainPanel);
 
         btnBack.addActionListener(e -> {
-            new EventDetailsWindow(ticketPass, currentUser, eventId).setVisible(true);
-            dispose();
+            if (isOrganizer) {
+                dispose();
+            } else {
+                new EventDetailsWindow(ticketPass, currentUser, eventId).setVisible(true);
+                dispose();
+            }
         });
+
         btnProceed.addActionListener(e -> {
             if (selectedSeat != null) {
                 if (isOrganizer) {
@@ -113,7 +118,7 @@ public class SeatingChartWindow extends JFrame {
                     if (choice >= 0) {
                         ticketPass.updateSeatAvailability(currentUser, selectedSeat.getSeatId(), options[choice]);
                         JOptionPane.showMessageDialog(this, "Seat status updated to " + options[choice]);
-                        loadSeatingChart(); // Refresh UI
+                        loadSeatingChart();
                     }
                 } else {
 

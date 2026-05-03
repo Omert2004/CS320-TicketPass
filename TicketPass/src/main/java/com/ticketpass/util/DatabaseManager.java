@@ -1,5 +1,6 @@
 package com.ticketpass.util;
 
+import com.mysql.cj.jdbc.CallableStatement;
 import com.ticketpass.model.User;
 import com.ticketpass.model.Role;
 
@@ -9,7 +10,7 @@ public class DatabaseManager {
 
     private static final String URL = "jdbc:mysql://localhost:3306/ticketpass";
     private static final String USER = "root";
-    private static final String PASSWORD = "**Aa445566";
+    private static final String PASSWORD = "";
 
     public static Connection getConnection() throws SQLException {
         try {

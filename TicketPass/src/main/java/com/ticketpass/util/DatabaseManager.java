@@ -9,7 +9,7 @@ public class DatabaseManager {
 
     private static final String URL = "jdbc:mysql://localhost:3306/ticketpass";
     private static final String USER = "root";
-    private static final String PASSWORD = "asdnjdbjhdbnsajkdb2193857**189AA";
+    private static final String PASSWORD = "";
 
     public static Connection getConnection() throws SQLException {
         try {
@@ -21,31 +21,41 @@ public class DatabaseManager {
     }
 
     public static User authenticate(String username, String password) {
-        String hashedPassword = PasswordHasher.hashPassword(password);
+        String inputHash = PasswordHasher.hashPassword(password);
 
-        String query = "{CALL sp_login(?, ?)}";
+        String query = "SELECT userId, username, email, passwordHash, role, isLocked, failedAttempts FROM users WHERE username = ?";
 
         try (Connection conn = getConnection();
-             CallableStatement cstmt = conn.prepareCall(query)) {
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            cstmt.setString(1, username);
-            cstmt.setString(2, hashedPassword);
-
-            ResultSet rs = cstmt.executeQuery();
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
+                int userId = rs.getInt("userId");
+                boolean isLocked = rs.getBoolean("isLocked");
+                int failedAttempts = rs.getInt("failedAttempts");
+                String dbHash = rs.getString("passwordHash");
                 Role userRole = Role.valueOf(rs.getString("role").toUpperCase());
 
-                return new User(
-                        rs.getInt("userId"),
-                        rs.getString("username"),
-                        rs.getString("email"),
-                        hashedPassword,
-                        userRole,
-                        rs.getBoolean("isLocked"),
-                        rs.getInt("failedAttempts"),
-                        null
-                );
+                if (isLocked) {
+                    System.out.println("Login denied: Account is locked.");
+                    return null;
+                }
+
+                if (dbHash.equals(inputHash)) {
+                    resetFailedAttempts(userId);
+                    return new User(userId, rs.getString("username"), rs.getString("email"),
+                            dbHash, userRole, false, 0, null);
+                } else {
+                    incrementFailedAttempts(userId);
+
+                    if (failedAttempts + 1 >= 3) {
+                        lockAccount(userId);
+                        System.out.println("Account locked due to too many failed attempts.");
+                    }
+                    return null;
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

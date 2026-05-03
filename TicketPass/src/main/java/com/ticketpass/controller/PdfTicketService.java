@@ -5,9 +5,8 @@ import com.ticketpass.model.dto.Booking;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.PDType0Font; // Removed PDType1Font and Standard14Fonts
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -28,7 +27,6 @@ public class PdfTicketService {
     public File generatePDFTicket(int userId, int ticketId) {
         File ticketFile = new File("ticket_" + ticketId + ".pdf");
 
-        // Find the booking using existing DTO and Service
         Booking info = null;
         List<Booking> bookings = historyService.getUserBookings(userId);
         for (Booking b : bookings) {
@@ -38,21 +36,29 @@ public class PdfTicketService {
             }
         }
 
-        if (info == null) return ticketFile; // Ticket not found for this user
+        if (info == null) return ticketFile;
 
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage();
             document.addPage(page);
 
+            java.io.InputStream fontStream = getClass().getResourceAsStream("/fonts/arial.ttf");
+
+            if (fontStream == null) {
+                throw new IOException("Could not find arial.ttf in the resources/fonts/ folder!");
+            }
+
+            PDType0Font customFont = PDType0Font.load(document, fontStream);
+
             try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
                 contentStream.beginText();
-                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 24);
+                contentStream.setFont(customFont, 24);
                 contentStream.newLineAtOffset(50, 700);
                 contentStream.showText("TicketPass Official Ticket");
                 contentStream.endText();
 
                 contentStream.beginText();
-                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 16);
+                contentStream.setFont(customFont, 16);
                 contentStream.newLineAtOffset(50, 650);
                 contentStream.showText("Event: " + info.getEventName());
                 contentStream.newLineAtOffset(0, -30);

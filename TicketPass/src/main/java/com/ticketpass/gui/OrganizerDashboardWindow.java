@@ -22,6 +22,7 @@ public class OrganizerDashboardWindow extends JFrame {
     private JButton btnAddEvent;
     private JButton btnEditEvent;
     private JButton btnCancelEvent;
+    private JButton btnViewSeats;
     private JButton btnViewStats;
     private JTextArea reportTextArea;
 
@@ -58,6 +59,7 @@ public class OrganizerDashboardWindow extends JFrame {
         btnAddEvent = new JButton("Add New Event");
         btnEditEvent = new JButton("Edit Selected Event");
         btnCancelEvent = new JButton("Cancel Selected Event");
+        btnViewSeats = new JButton("View/Manage Seats");
         btnViewStats = new JButton("Generate Sales Report");
 
         // Reporting Area
@@ -72,6 +74,7 @@ public class OrganizerDashboardWindow extends JFrame {
         topPanel.add(btnAddEvent);
         topPanel.add(btnEditEvent);
         topPanel.add(btnCancelEvent);
+        topPanel.add(btnViewSeats);
         topPanel.add(btnViewStats);
         add(topPanel, BorderLayout.NORTH);
 
@@ -105,6 +108,19 @@ public class OrganizerDashboardWindow extends JFrame {
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Please select an event from the table first.", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        // View/Manage Seats Listener (SRS-TP-006)
+        btnViewSeats.addActionListener(e -> {
+            int selectedRow = eventTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int eventId = (int) tableModel.getValueAt(selectedRow, 0);
+                // Because currentUser is an Organizer, it will automatically launch in "Manage" mode.
+                new SeatingChartWindow(ticketPass, currentUser, eventId).setVisible(true);
+
+            } else {
+                JOptionPane.showMessageDialog(this, "Please select an event from the table first to view its seats.", "Warning", JOptionPane.WARNING_MESSAGE);
             }
         });
 

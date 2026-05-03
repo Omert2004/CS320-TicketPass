@@ -117,6 +117,12 @@ public class TicketPass {
         }
     }
 
+    public void updateSeatAvailability(User currentUser, int seatId, String status) {
+        if (currentUser != null && (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.ORGANIZER)) {
+            adminService.updateSeatAvailability(currentUser.getUserId(), seatId, status);
+        }
+    }
+
     public Report viewSalesReport(User currentUser) {
         if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
             return reportingService.generateSalesReport(currentUser.getUserId());

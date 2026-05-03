@@ -2,6 +2,7 @@ package com.ticketpass.gui;
 
 import com.ticketpass.controller.TicketPass;
 import com.ticketpass.model.User;
+import com.ticketpass.model.Role;
 import com.ticketpass.model.Seat;
 import com.ticketpass.model.dto.SeatingChart;
 
@@ -16,6 +17,7 @@ public class SeatingChartWindow extends JFrame {
     private User currentUser;
     private int eventId;
     private Seat selectedSeat = null;
+    private boolean isOrganizer;
 
     private JPanel chartPanel;
     private JButton btnProceed;
@@ -25,13 +27,17 @@ public class SeatingChartWindow extends JFrame {
     private final Color COLOR_LOCKED = new Color(255, 193, 7);
     private final Color COLOR_SOLD = new Color(108, 117, 125);
     private final Color COLOR_SELECTED = new Color(0, 123, 255);
+    private final Color COLOR_BLOCKED = new Color(220, 53, 69); // Red for Organizer Blocked
 
     public SeatingChartWindow(TicketPass ticketPass, User currentUser, int eventId) {
         this.ticketPass = ticketPass;
         this.currentUser = currentUser;
         this.eventId = eventId;
 
-        setTitle("TicketPass - Select Your Seat");
+        // Check if the user is an organizer/admin
+        this.isOrganizer = (currentUser.getRole() == Role.ORGANIZER || currentUser.getRole() == Role.ADMIN);
+
+        setTitle(isOrganizer ? "TicketPass - Manage Seat Availability" : "TicketPass - Select Your Seat");
         setSize(850, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -40,14 +46,15 @@ public class SeatingChartWindow extends JFrame {
         mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        JLabel lblTitle = new JLabel("Interactive Seating Chart", SwingConstants.CENTER);
+        JLabel lblTitle = new JLabel(isOrganizer ? "Manage Seating Availability" : "Interactive Seating Chart", SwingConstants.CENTER);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
 
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         legendPanel.add(createLegendItem("Available", COLOR_AVAILABLE));
-        legendPanel.add(createLegendItem("In Cart/Locked", COLOR_LOCKED));
+        legendPanel.add(createLegendItem("In Cart", COLOR_LOCKED));
         legendPanel.add(createLegendItem("Sold", COLOR_SOLD));
-        legendPanel.add(createLegendItem("Your Selection", COLOR_SELECTED));
+        if (isOrganizer) legendPanel.add(createLegendItem("Blocked", COLOR_BLOCKED));
+        legendPanel.add(createLegendItem("Selected", COLOR_SELECTED));
 
         topPanel.add(lblTitle, BorderLayout.NORTH);
         topPanel.add(legendPanel, BorderLayout.SOUTH);
@@ -67,12 +74,14 @@ public class SeatingChartWindow extends JFrame {
         lblSelectedInfo.setFont(new Font("Segoe UI", Font.ITALIC, 14));
 
         JPanel buttonActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
-        JButton btnBack = new JButton("Back");
-        btnProceed = new JButton("Proceed to Checkout");
+        JButton btnBack = new JButton("Close");
+
+        // Dynamic Button Text based on Role
+        btnProceed = new JButton(isOrganizer ? "Update Seat Status" : "Proceed to Checkout");
 
         btnBack.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnProceed.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnProceed.setBackground(new Color(40, 167, 69));
+        btnProceed.setBackground(isOrganizer ? new Color(23, 162, 184) : new Color(40, 167, 69));
         btnProceed.setForeground(Color.WHITE);
         btnProceed.setEnabled(false);
 
@@ -87,21 +96,33 @@ public class SeatingChartWindow extends JFrame {
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
         add(mainPanel);
 
-        btnBack.addActionListener(e -> {
-            new EventDetailsWindow(ticketPass, currentUser, eventId).setVisible(true);
-            dispose();
-        });
+        btnBack.addActionListener(e -> dispose());
 
         btnProceed.addActionListener(e -> {
             if (selectedSeat != null) {
-                boolean success = ticketPass.selectSeat(selectedSeat.getSeatId(), currentUser.getUserId());
+                if (isOrganizer) {
+                    // --- ORGANIZER LOGIC ---
+                    String[] options = {"AVAILABLE", "BLOCKED"};
+                    int choice = JOptionPane.showOptionDialog(this,
+                            "Set status for Row " + selectedSeat.getRowLabel() + " Seat " + selectedSeat.getSeatNumber(),
+                            "Update Seat Status", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                            null, options, options[0]);
 
-                if (success) {
-                    new CheckoutWindow(ticketPass, currentUser, eventId, selectedSeat).setVisible(true);
-                    dispose();
+                    if (choice >= 0) {
+                        ticketPass.updateSeatAvailability(currentUser, selectedSeat.getSeatId(), options[choice]);
+                        JOptionPane.showMessageDialog(this, "Seat status updated to " + options[choice]);
+                        loadSeatingChart(); // Refresh UI
+                    }
                 } else {
-                    JOptionPane.showMessageDialog(this, "Sorry, this seat was just locked by another user!", "Seat Unavailable", JOptionPane.ERROR_MESSAGE);
-                    loadSeatingChart();
+                    // --- CUSTOMER LOGIC ---
+                    boolean success = ticketPass.selectSeat(selectedSeat.getSeatId(), currentUser.getUserId());
+                    if (success) {
+                        new CheckoutWindow(ticketPass, currentUser, eventId, selectedSeat).setVisible(true);
+                        dispose();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Sorry, this seat was just locked by another user!", "Seat Unavailable", JOptionPane.ERROR_MESSAGE);
+                        loadSeatingChart();
+                    }
                 }
             }
         });
@@ -176,10 +197,38 @@ public class SeatingChartWindow extends JFrame {
                     btnSeat.setToolTipText("Currently in someone's cart");
                     break;
                 case SOLD:
-                case BLOCKED:
                     btnSeat.setBackground(COLOR_SOLD);
-                    btnSeat.setEnabled(false);
                     break;
+                case BLOCKED:
+                    if (isOrganizer) {
+                        btnSeat.setBackground(COLOR_BLOCKED);
+                        btnSeat.setForeground(Color.WHITE);
+                    } else {
+                        btnSeat.setBackground(COLOR_SOLD);
+                    }
+                    break;
+            }
+            //Determine who is allowed to click what
+            boolean canClick = false;
+
+            if (isOrganizer && (seat.getStatus() == com.ticketpass.model.SeatStatus.AVAILABLE || seat.getStatus() == com.ticketpass.model.SeatStatus.BLOCKED)) {
+                canClick = true; // Organizers can toggle Available <-> Blocked
+            } else if (!isOrganizer && seat.getStatus() == com.ticketpass.model.SeatStatus.AVAILABLE) {
+                canClick = true; // Customers can only click Available
+            }
+
+            //Apply the clickability
+            if (canClick) {
+                btnSeat.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                btnSeat.addActionListener(e -> {
+                    loadSeatingChartUIOnly(seats, seat);
+                    selectedSeat = seat;
+                    btnProceed.setEnabled(true);
+                    lblSelectedInfo.setText("Selected: Row " + seat.getRowLabel() + " - Seat " + seat.getSeatNumber() + " [" + seat.getStatus() + "]");
+                });
+            } else {
+                // Disable the button (Used for SOLD/LOCKED, or BLOCKED if user is a customer)
+                btnSeat.setEnabled(false);
             }
             rowPanel.add(btnSeat);
         }

@@ -46,7 +46,6 @@ public class OrganizerDashboardWindow extends JFrame {
         // Table for Events
         String[] columns = {"Event ID", "Name", "Category", "Date", "Venue", "Capacity", "Price", "Status"};
 
-        // Custom TableModel that disables double-click editing
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -55,21 +54,21 @@ public class OrganizerDashboardWindow extends JFrame {
         };
         eventTable = new JTable(tableModel);
 
-        // Buttons
+
         btnAddEvent = new JButton("Add New Event");
         btnEditEvent = new JButton("Edit Selected Event");
         btnCancelEvent = new JButton("Cancel Selected Event");
         btnViewSeats = new JButton("View/Manage Seats");
         btnViewStats = new JButton("Generate Sales Report");
 
-        // Reporting Area
+
         reportTextArea = new JTextArea(10, 30);
         reportTextArea.setEditable(false);
         reportTextArea.setBorder(BorderFactory.createTitledBorder("Event Statistics & Reports"));
     }
 
     private void layoutComponents() {
-        // Top Panel with Buttons
+
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topPanel.add(btnAddEvent);
         topPanel.add(btnEditEvent);
@@ -78,12 +77,12 @@ public class OrganizerDashboardWindow extends JFrame {
         topPanel.add(btnViewStats);
         add(topPanel, BorderLayout.NORTH);
 
-        // Center Panel with Table
+
         JScrollPane tableScrollPane = new JScrollPane(eventTable);
         tableScrollPane.setBorder(BorderFactory.createTitledBorder("My Managed Events"));
         add(tableScrollPane, BorderLayout.CENTER);
 
-        // Bottom Panel for Reports
+
         JScrollPane reportScrollPane = new JScrollPane(reportTextArea);
         add(reportScrollPane, BorderLayout.SOUTH);
     }
@@ -116,7 +115,6 @@ public class OrganizerDashboardWindow extends JFrame {
             int selectedRow = eventTable.getSelectedRow();
             if (selectedRow != -1) {
                 int eventId = (int) tableModel.getValueAt(selectedRow, 0);
-                // Because currentUser is an Organizer, it will automatically launch in "Manage" mode.
                 new SeatingChartWindow(ticketPass, currentUser, eventId).setVisible(true);
 
             } else {
@@ -172,7 +170,6 @@ public class OrganizerDashboardWindow extends JFrame {
                 newEvent.setVenueName(txtVenue.getText());
                 newEvent.setVenueCapacity(Integer.parseInt(txtCapacity.getText()));
                 newEvent.setPrice(Double.parseDouble(txtPrice.getText()));
-                // Set default date for demonstration (should be added to form)
                 newEvent.setEventDate(LocalDateTime.now().plusMonths(1));
 
                 // Send to backend
@@ -194,7 +191,7 @@ public class OrganizerDashboardWindow extends JFrame {
             return;
         }
 
-        // 1. Grab current values from the Correct Columns
+
         // 0:ID, 1:Name, 2:Category, 3:Date, 4:Venue, 5:Capacity, 6:Price, 7:Status
         int eventId = (int) tableModel.getValueAt(selectedRow, 0);
         String currentName = (String) tableModel.getValueAt(selectedRow, 1);
@@ -209,7 +206,6 @@ public class OrganizerDashboardWindow extends JFrame {
         // Safety check for Price (Column 6) - Remove $ for display
         String currentPriceStr = tableModel.getValueAt(selectedRow, 6).toString().replace("$", "").trim();
 
-        // 2. Initialize UI Components
         JTextField txtName = new JTextField(currentName);
         JTextField txtDate = new JTextField(currentDateStr);
         JTextField txtVenue = new JTextField(currentVenue);
@@ -241,48 +237,60 @@ public class OrganizerDashboardWindow extends JFrame {
                 updatedData.setCategory((String) comboCategory.getSelectedItem());
                 updatedData.setStatus((com.ticketpass.model.EventStatus) comboStatus.getSelectedItem());
                 updatedData.setAddress(txtVenue.getText().trim());
+                String rawPrice = txtPrice.getText().replace("$", "").replace(",", "").trim();
 
-                // 1. Parse BOTH as Double first to be safe (handles "100.0" or "100")
-                double priceVal = Double.parseDouble(txtPrice.getText().replace("$", "").trim());
-                double capacityVal = Double.parseDouble(txtCapacity.getText().trim());
+                if (rawPrice.isEmpty()) rawPrice = "0";
+                double priceVal = Double.parseDouble(rawPrice);
 
-                // 2. Set them (Casting capacity to int since seats must be whole numbers)
+                String rawCapacity = txtCapacity.getText().replace(",", "").trim();
+                if (rawCapacity.isEmpty()) rawCapacity = "0";
+                int capacityVal = Integer.parseInt(rawCapacity);
+
                 updatedData.setPrice(priceVal);
-                updatedData.setVenueCapacity((int) capacityVal);
+                updatedData.setVenueCapacity(capacityVal);
 
-                // 3. Date Parsing
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm");
                 updatedData.setEventDate(LocalDateTime.parse(txtDate.getText().trim(), formatter));
 
-                // 4. Send to Backend
+
                 ticketPass.updateEvent(currentUser, eventId, updatedData);
 
                 JOptionPane.showMessageDialog(this, "Success: Event Updated!");
                 loadOrganizerEvents();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Price or Capacity has invalid characters: " + ex.getMessage());
+
+                JOptionPane.showMessageDialog(this,
+                        "Please ensure Price and Capacity only contain numbers and decimals.\nError details: " + ex.getMessage(),
+                        "Invalid Number Format",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (java.time.format.DateTimeParseException ex) {
+
+                JOptionPane.showMessageDialog(this,
+                        "Please ensure the Date matches the format: May 03, 2026 - 20:30",
+                        "Invalid Date Format",
+                        JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "System Error", JOptionPane.ERROR_MESSAGE);
             }
         }
 
     }
 
     private void loadOrganizerEvents() {
-        //Clear any existing rows to prevent duplicates if refreshed
+
         tableModel.setRowCount(0);
 
-        //Fetch all upcoming events
+
         List<Event> allEvents = ticketPass.getUpcomingEvents();
 
-        //Match the formatting the customer dashboard uses
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm");
 
-        //Loop through and filter for ONLY this organizer
+
         for (Event event : allEvents) {
 
-            // Check if the event's organizer ID matches the logged-in user's ID
+
             if (event.getOrganizerId() == currentUser.getUserId()) {
 
                 Object[] row = {
@@ -291,7 +299,7 @@ public class OrganizerDashboardWindow extends JFrame {
                         event.getCategory(),
                         event.getEventDate().format(formatter),
                         event.getVenueName(),
-                        event.getVenueCapacity(), // <--- ADDED THIS
+                        event.getVenueCapacity(),
                         String.format("$%.2f", event.getPrice()),
                         event.getStatus()
                 };

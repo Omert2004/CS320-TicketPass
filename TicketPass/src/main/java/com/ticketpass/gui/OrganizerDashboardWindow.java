@@ -31,7 +31,7 @@ public class OrganizerDashboardWindow extends JFrame {
         this.currentUser = currentUser;
 
         setTitle("TicketPass - Organizer Dashboard");
-        setSize(800, 600);
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
@@ -147,43 +147,72 @@ public class OrganizerDashboardWindow extends JFrame {
     // Opens a basic form to collect Event Data
     private void openAddEventDialog() {
         JTextField txtName = new JTextField();
-        JTextField txtCategory = new JTextField();
+
+        JComboBox<String> comboCategory = new JComboBox<>(new String[]{"Music", "Theater", "Sports", "Seminar", "Other"});
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm");
+        String defaultDate = LocalDateTime.now().plusMonths(1).format(formatter);
+        JTextField txtDate = new JTextField(defaultDate);
+
         JTextField txtVenue = new JTextField();
         JTextField txtCapacity = new JTextField();
         JTextField txtPrice = new JTextField();
 
         Object[] message = {
                 "Event Name:", txtName,
-                "Category:", txtCategory,
-                "Venue Name:", txtVenue,
+                "Category:", comboCategory,
+                "Date (MMM dd, yyyy - HH:mm):", txtDate,
+                "Venue:", txtVenue,
                 "Capacity:", txtCapacity,
                 "Price:", txtPrice
         };
 
         int option = JOptionPane.showConfirmDialog(this, message, "Create New Event", JOptionPane.OK_CANCEL_OPTION);
+
         if (option == JOptionPane.OK_OPTION) {
             try {
-                // Bundle data into Event Model
                 Event newEvent = new Event();
-                newEvent.setName(txtName.getText());
-                newEvent.setCategory(txtCategory.getText());
-                newEvent.setVenueName(txtVenue.getText());
-                newEvent.setVenueCapacity(Integer.parseInt(txtCapacity.getText()));
-                newEvent.setPrice(Double.parseDouble(txtPrice.getText()));
-                newEvent.setEventDate(LocalDateTime.now().plusMonths(1));
+                newEvent.setName(txtName.getText().trim());
+                newEvent.setCategory((String) comboCategory.getSelectedItem());
 
-                // Send to backend
+                newEvent.setAddress(txtVenue.getText().trim());
+                newEvent.setVenueName(txtVenue.getText().trim());
+
+                newEvent.setStatus(com.ticketpass.model.EventStatus.PENDING);
+
+                String rawPrice = txtPrice.getText().replace("$", "").replace(",", ".").trim();
+                if (rawPrice.isEmpty()) rawPrice = "0";
+                newEvent.setPrice(Double.parseDouble(rawPrice));
+
+                String rawCapacity = txtCapacity.getText().replace(".", "").replace(",", "").trim();
+                if (rawCapacity.isEmpty()) rawCapacity = "0";
+                newEvent.setVenueCapacity(Integer.parseInt(rawCapacity));
+
+                newEvent.setEventDate(LocalDateTime.parse(txtDate.getText().trim(), formatter));
+
                 ticketPass.createNewEvent(currentUser, newEvent);
 
                 JOptionPane.showMessageDialog(this, "Event Created Successfully!");
-                // Refresh table
+
+                // Refresh tabl
                 loadOrganizerEvents();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Please enter valid numbers for Capacity and Price.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "Please enter valid numbers for Capacity and Price.",
+                        "Invalid Number Format",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (java.time.format.DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Please ensure the Date matches the format: May 03, 2026 - 20:30",
+                        "Invalid Date Format",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "System Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
+
     private void openEditEventDialog() {
         int selectedRow = eventTable.getSelectedRow();
         if (selectedRow == -1) {

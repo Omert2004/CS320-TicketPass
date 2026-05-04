@@ -59,6 +59,10 @@ public class TicketPass {
         return browsingService.getUpcomingEvents();
     }
 
+    public List<Event> getOrganizerEvents(int organizerId) {
+        return adminService.getOrganizerEvents(organizerId);
+    }
+
     public List<Event> searchEvents(String category, Date date, String location, double price, String artist) {
         return browsingService.searchEvents(category, date, location, price, artist);
     }

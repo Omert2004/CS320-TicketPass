@@ -32,7 +32,7 @@ public class AdminManagementService {
     }
 
     public void updateEvent(int adminId, int eventId, Event eventData) {
-        String query = "{CALL sp_editEvent(?, ?, ?, ?, ?, ?, ?)}";
+        String query = "{CALL sp_editEvent(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection conn = DatabaseManager.getConnection();
              CallableStatement stmt = conn.prepareCall(query)) {
 
@@ -43,6 +43,8 @@ public class AdminManagementService {
             stmt.setTimestamp(5, Timestamp.valueOf(eventData.getEventDate()));
             stmt.setString(6, eventData.getAddress());
             stmt.setDouble(7, eventData.getPrice());
+            stmt.setInt(8, eventData.getVenueCapacity());
+            stmt.setString(9, eventData.getStatus().toString());
 
             stmt.execute();
         } catch (SQLException e) {
@@ -87,6 +89,40 @@ public class AdminManagementService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Event> getOrganizerEvents(int organizerId) {
+        List<Event> events = new ArrayList<>();
+        String query = "{CALL sp_getOrganizerEvents(?)}";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query)) {
+
+            stmt.setInt(1, organizerId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Event event = new Event();
+                    event.setEventId(rs.getInt("eventId"));
+                    event.setOrganizerId(rs.getInt("organizerId"));
+                    event.setName(rs.getString("name"));
+                    event.setCategory(rs.getString("category"));
+                    if (rs.getTimestamp("eventDate") != null) {
+                        event.setEventDate(rs.getTimestamp("eventDate").toLocalDateTime());
+                    }
+                    event.setAddress(rs.getString("address"));
+                    event.setVenueName(rs.getString("venueName"));
+                    event.setVenueCapacity(rs.getInt("venueCapacity"));
+                    event.setPrice(rs.getDouble("price"));
+                    event.setStatus(com.ticketpass.model.EventStatus.valueOf(rs.getString("status").toUpperCase()));
+
+                    events.add(event);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return events;
     }
 
     public void updateSeatAvailability(int adminId, int seatId, String status) {

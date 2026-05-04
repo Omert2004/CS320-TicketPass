@@ -57,6 +57,15 @@ END$$
 -- -------------------------------------------------------
 --  IEventManagement
 -- -------------------------------------------------------
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_getOrganizerEvents$$
+CREATE PROCEDURE sp_getOrganizerEvents(IN p_organizerId INT)
+BEGIN
+    SELECT * FROM events 
+    WHERE organizerId = p_organizerId
+    ORDER BY eventDate DESC;
+END$$
 
 DROP PROCEDURE IF EXISTS sp_createEvent$$
 CREATE PROCEDURE sp_createEvent(
@@ -72,10 +81,12 @@ END$$
 DROP PROCEDURE IF EXISTS sp_editEvent$$
 CREATE PROCEDURE sp_editEvent(
     IN p_adminId INT, IN p_eventId INT, IN p_name VARCHAR(150), IN p_category VARCHAR(80),
-    IN p_eventDate DATETIME, IN p_address VARCHAR(255), IN p_price DOUBLE)
+    IN p_eventDate DATETIME, IN p_address VARCHAR(255), IN p_price DOUBLE,
+    IN p_venueCapacity INT,IN p_status VARCHAR(50))
 BEGIN
     UPDATE events SET name=p_name, category=p_category, eventDate=p_eventDate,
-           address=p_address, price=p_price WHERE eventId=p_eventId;
+           address=p_address, price=p_price, venueCapacity = p_venueCapacity, status = p_status 
+           WHERE eventId=p_eventId;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_cancelEvent$$

@@ -221,11 +221,11 @@ public class OrganizerDashboardWindow extends JFrame {
         Object[] message = {
                 "Event Name:", txtName,
                 "Category:", comboCategory,
-                "Status:", comboStatus,
                 "Date:", txtDate,
                 "Venue:", txtVenue,
                 "Capacity:", txtCapacity,
-                "Price:", txtPrice
+                "Price:", txtPrice,
+                "Status:", comboStatus
         };
 
         int option = JOptionPane.showConfirmDialog(this, message, "Edit Event", JOptionPane.OK_CANCEL_OPTION);
@@ -237,12 +237,12 @@ public class OrganizerDashboardWindow extends JFrame {
                 updatedData.setCategory((String) comboCategory.getSelectedItem());
                 updatedData.setStatus((com.ticketpass.model.EventStatus) comboStatus.getSelectedItem());
                 updatedData.setAddress(txtVenue.getText().trim());
-                String rawPrice = txtPrice.getText().replace("$", "").replace(",", "").trim();
 
+                String rawPrice = txtPrice.getText().replace("$", "").replace(",", ".").trim();
                 if (rawPrice.isEmpty()) rawPrice = "0";
                 double priceVal = Double.parseDouble(rawPrice);
 
-                String rawCapacity = txtCapacity.getText().replace(",", "").trim();
+                String rawCapacity = txtCapacity.getText().replace(".", "").replace(",", "").trim();
                 if (rawCapacity.isEmpty()) rawCapacity = "0";
                 int capacityVal = Integer.parseInt(rawCapacity);
 
@@ -281,30 +281,22 @@ public class OrganizerDashboardWindow extends JFrame {
 
         tableModel.setRowCount(0);
 
-
-        List<Event> allEvents = ticketPass.getUpcomingEvents();
-
+        List<Event> myEvents = ticketPass.getOrganizerEvents(currentUser.getUserId());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm");
 
-
-        for (Event event : allEvents) {
-
-
-            if (event.getOrganizerId() == currentUser.getUserId()) {
-
-                Object[] row = {
-                        event.getEventId(),
-                        event.getName(),
-                        event.getCategory(),
-                        event.getEventDate().format(formatter),
-                        event.getVenueName(),
-                        event.getVenueCapacity(),
-                        String.format("$%.2f", event.getPrice()),
-                        event.getStatus()
-                };
-                tableModel.addRow(row);
-            }
+        for (Event event : myEvents) {
+            Object[] row = {
+                    event.getEventId(),
+                    event.getName(),
+                    event.getCategory(),
+                    event.getEventDate().format(formatter),
+                    event.getVenueName(),
+                    event.getVenueCapacity(),
+                    String.format("$%.2f", event.getPrice()),
+                    event.getStatus()
+            };
+            tableModel.addRow(row);
         }
     }
 }

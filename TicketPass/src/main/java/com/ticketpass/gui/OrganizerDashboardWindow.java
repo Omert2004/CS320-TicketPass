@@ -49,7 +49,7 @@ public class OrganizerDashboardWindow extends JFrame {
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // This makes ALL cells strictly read-only!
+                return false;
             }
         };
         eventTable = new JTable(tableModel);
@@ -155,6 +155,7 @@ public class OrganizerDashboardWindow extends JFrame {
         JTextField txtDate = new JTextField(defaultDate);
 
         JTextField txtVenue = new JTextField();
+        JTextField txtAddress = new JTextField();
         JTextField txtCapacity = new JTextField();
         JTextField txtPrice = new JTextField();
 
@@ -163,6 +164,7 @@ public class OrganizerDashboardWindow extends JFrame {
                 "Category:", comboCategory,
                 "Date (MMM dd, yyyy - HH:mm):", txtDate,
                 "Venue:", txtVenue,
+                "Address:", txtAddress,
                 "Capacity:", txtCapacity,
                 "Price:", txtPrice
         };
@@ -175,7 +177,7 @@ public class OrganizerDashboardWindow extends JFrame {
                 newEvent.setName(txtName.getText().trim());
                 newEvent.setCategory((String) comboCategory.getSelectedItem());
 
-                newEvent.setAddress(txtVenue.getText().trim());
+                newEvent.setAddress(txtAddress.getText().trim());
                 newEvent.setVenueName(txtVenue.getText().trim());
 
                 newEvent.setStatus(com.ticketpass.model.EventStatus.PENDING);
@@ -220,24 +222,29 @@ public class OrganizerDashboardWindow extends JFrame {
             return;
         }
 
-
         // 0:ID, 1:Name, 2:Category, 3:Date, 4:Venue, 5:Capacity, 6:Price, 7:Status
         int eventId = (int) tableModel.getValueAt(selectedRow, 0);
+
+        List<Event> myEvents = ticketPass.getOrganizerEvents(currentUser.getUserId());
+        Event eventToEdit = myEvents.stream().filter(e -> e.getEventId() == eventId).findFirst().orElse(null);
+
+        if (eventToEdit == null) {
+            JOptionPane.showMessageDialog(this, "Error finding event details.");
+            return;
+        }
+
         String currentName = (String) tableModel.getValueAt(selectedRow, 1);
         String currentCategory = (String) tableModel.getValueAt(selectedRow, 2);
         String currentDateStr = (String) tableModel.getValueAt(selectedRow, 3);
-        String currentVenue = (String) tableModel.getValueAt(selectedRow, 4);
 
-        // Safety check for Capacity (Column 5)
         Object capVal = tableModel.getValueAt(selectedRow, 5);
         String currentCapacity = (capVal != null) ? capVal.toString() : "0";
-
-        // Safety check for Price (Column 6) - Remove $ for display
         String currentPriceStr = tableModel.getValueAt(selectedRow, 6).toString().replace("$", "").trim();
 
         JTextField txtName = new JTextField(currentName);
         JTextField txtDate = new JTextField(currentDateStr);
-        JTextField txtVenue = new JTextField(currentVenue);
+        JTextField txtVenue = new JTextField(eventToEdit.getVenueName());
+        JTextField txtAddress = new JTextField(eventToEdit.getAddress());
         JTextField txtCapacity = new JTextField(currentCapacity);
         JTextField txtPrice = new JTextField(currentPriceStr);
 
@@ -251,7 +258,8 @@ public class OrganizerDashboardWindow extends JFrame {
                 "Event Name:", txtName,
                 "Category:", comboCategory,
                 "Date:", txtDate,
-                "Venue:", txtVenue,
+                "Venue Name:", txtVenue,
+                "Address:", txtAddress,
                 "Capacity:", txtCapacity,
                 "Price:", txtPrice,
                 "Status:", comboStatus
@@ -265,7 +273,8 @@ public class OrganizerDashboardWindow extends JFrame {
                 updatedData.setName(txtName.getText().trim());
                 updatedData.setCategory((String) comboCategory.getSelectedItem());
                 updatedData.setStatus((com.ticketpass.model.EventStatus) comboStatus.getSelectedItem());
-                updatedData.setAddress(txtVenue.getText().trim());
+                updatedData.setVenueName(txtVenue.getText().trim());
+                updatedData.setAddress(txtAddress.getText().trim());
 
                 String rawPrice = txtPrice.getText().replace("$", "").replace(",", ".").trim();
                 if (rawPrice.isEmpty()) rawPrice = "0";
@@ -280,7 +289,6 @@ public class OrganizerDashboardWindow extends JFrame {
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy - HH:mm");
                 updatedData.setEventDate(LocalDateTime.parse(txtDate.getText().trim(), formatter));
-
 
                 ticketPass.updateEvent(currentUser, eventId, updatedData);
 
@@ -303,7 +311,6 @@ public class OrganizerDashboardWindow extends JFrame {
                 JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "System Error", JOptionPane.ERROR_MESSAGE);
             }
         }
-
     }
 
     private void loadOrganizerEvents() {

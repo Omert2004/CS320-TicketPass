@@ -24,6 +24,7 @@ public class OrganizerDashboardWindow extends JFrame {
     private JButton btnCancelEvent;
     private JButton btnViewSeats;
     private JButton btnViewStats;
+    private JButton btnLogout;
     private JTextArea reportTextArea;
 
     public OrganizerDashboardWindow(TicketPass ticketPass, User currentUser) {
@@ -31,7 +32,7 @@ public class OrganizerDashboardWindow extends JFrame {
         this.currentUser = currentUser;
 
         setTitle("TicketPass - Organizer Dashboard");
-        setSize(900, 600);
+        setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
@@ -60,6 +61,7 @@ public class OrganizerDashboardWindow extends JFrame {
         btnCancelEvent = new JButton("Cancel Selected Event");
         btnViewSeats = new JButton("View/Manage Seats");
         btnViewStats = new JButton("Generate Sales Report");
+        btnLogout = new JButton("Logout");
 
 
         reportTextArea = new JTextArea(10, 30);
@@ -75,6 +77,7 @@ public class OrganizerDashboardWindow extends JFrame {
         topPanel.add(btnCancelEvent);
         topPanel.add(btnViewSeats);
         topPanel.add(btnViewStats);
+        topPanel.add(btnLogout);
         add(topPanel, BorderLayout.NORTH);
 
 
@@ -141,6 +144,11 @@ public class OrganizerDashboardWindow extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, "Please select an event to view its statistics.", "Warning", JOptionPane.WARNING_MESSAGE);
             }
+        });
+
+        btnLogout.addActionListener(e -> {
+            new LoginWindow(ticketPass).setVisible(true);
+            dispose();
         });
     }
 

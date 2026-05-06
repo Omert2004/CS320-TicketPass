@@ -140,4 +140,48 @@ public class TicketPass {
         }
         return null;
     }
+
+    // Admin: approve a pending event (SRS-TP-004)
+    public void approveEvent(User currentUser, int eventId) {
+        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
+            adminService.approveEvent(currentUser.getUserId(), eventId);
+        }
+    }
+
+    // Admin: hard delete an event (SRS-TP-005)
+    public void deleteEvent(User currentUser, int eventId) {
+        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
+            adminService.deleteEvent(currentUser.getUserId(), eventId);
+        }
+    }
+
+    // Admin: get all events regardless of status (SRS-TP-004)
+    public List<Event> getAllEvents(User currentUser) {
+        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
+            return adminService.getAllEvents(currentUser.getUserId());
+        }
+        return null;
+    }
+
+    // Admin: get all registered users (SRS-TP-010)
+    public List<User> getUserList(User currentUser) {
+        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
+            return adminService.getUserList(currentUser.getUserId());
+        }
+        return null;
+    }
+
+    // Admin: lock a user account (SRS-TP-010)
+    public void lockUserAccount(User currentUser, int targetUserId) {
+        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
+            adminService.lockUserAccount(currentUser.getUserId(), targetUserId);
+        }
+    }
+
+    // Admin: unlock a user account (SRS-TP-010)
+    public void unlockUserAccount(User currentUser, int targetUserId) {
+        if (currentUser != null && currentUser.getRole() == Role.ADMIN) {
+            adminService.unlockUserAccount(currentUser.getUserId(), targetUserId);
+        }
+    }
 }

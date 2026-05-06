@@ -96,7 +96,6 @@ public class LoginWindow extends JFrame {
                         break;
                     case ADMIN:
                         new AdminDashboardWindow(ticketPass, user).setVisible(true);
-                        JOptionPane.showMessageDialog(this, "Welcome Admin!");
                         break;
                     default:
                         JOptionPane.showMessageDialog(this, "Unknown role detected.");

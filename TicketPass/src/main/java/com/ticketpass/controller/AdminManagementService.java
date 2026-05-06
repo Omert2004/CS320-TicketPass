@@ -51,17 +51,19 @@ public class AdminManagementService {
     }
 
     public void updateEvent(int adminId, int eventId, Event eventData) {
-        String query = "{CALL sp_editEvent(?, ?, ?, ?, ?, ?, ?)}";
+        String query = "{CALL sp_editEvent(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection conn = DatabaseManager.getConnection();
              CallableStatement stmt = conn.prepareCall(query)) {
-
             stmt.setInt(1, adminId);
             stmt.setInt(2, eventId);
             stmt.setString(3, eventData.getName());
             stmt.setString(4, eventData.getCategory());
             stmt.setTimestamp(5, Timestamp.valueOf(eventData.getEventDate()));
             stmt.setString(6, eventData.getAddress());
-            stmt.setDouble(7, eventData.getPrice());
+            stmt.setString(7, eventData.getVenueName());
+            stmt.setInt(8, eventData.getVenueCapacity());
+            stmt.setDouble(9, eventData.getPrice());
+            stmt.setString(10, eventData.getStatus().toString());
 
             stmt.execute();
         } catch (SQLException e) {

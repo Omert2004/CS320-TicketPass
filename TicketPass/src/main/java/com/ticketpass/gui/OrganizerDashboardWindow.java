@@ -289,6 +289,15 @@ public class OrganizerDashboardWindow extends JFrame {
 
         if (option == JOptionPane.OK_OPTION) {
             try {
+                com.ticketpass.model.EventStatus newStatus = (com.ticketpass.model.EventStatus) comboStatus.getSelectedItem();
+                if (eventToEdit.getStatus() != com.ticketpass.model.EventStatus.ACTIVE && newStatus == com.ticketpass.model.EventStatus.ACTIVE) {
+                    JOptionPane.showMessageDialog(this,
+                            "Organizers cannot ACTIVATE events. This requires Admin approval.",
+                            "Permission Denied",
+                            JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
                 Event updatedData = new Event();
                 updatedData.setName(txtName.getText().trim());
                 updatedData.setCategory((String) comboCategory.getSelectedItem());

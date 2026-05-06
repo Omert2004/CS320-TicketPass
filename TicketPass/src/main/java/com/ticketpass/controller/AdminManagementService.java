@@ -110,6 +110,28 @@ public class AdminManagementService {
         }
     }
 
+    public void generateSeatingChart(int eventId, int rows, int columns) {
+        String query = "INSERT INTO seats (eventId, rowLabel, seatNumber, status) VALUES (?, ?, ?, 'AVAILABLE')";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            for (int r = 0; r < rows; r++) {
+                String rowLabel = String.valueOf((char) ('A' + r));
+                for (int c = 1; c <= columns; c++) {
+                    pstmt.setInt(1, eventId);
+                    pstmt.setString(2, rowLabel);
+                    pstmt.setInt(3, c);
+                    pstmt.addBatch();
+                }
+            }
+            pstmt.executeBatch();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void updateSeatAvailability(int adminId, int seatId, String status) {
         String query = "{CALL sp_updateSeatAvailability(?, ?, ?)}";
         try (Connection conn = DatabaseManager.getConnection();

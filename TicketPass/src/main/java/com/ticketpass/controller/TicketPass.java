@@ -128,6 +128,10 @@ public class TicketPass {
         }
     }
 
+    public void generateSeatingChart(int eventId, int rows, int cols) {
+        adminService.generateSeatingChart(eventId, rows, cols);
+    }
+
     public void updateSeatAvailability(User currentUser, int seatId, String status) {
         if (currentUser != null && (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.ORGANIZER)) {
             adminService.updateSeatAvailability(currentUser.getUserId(), seatId, status);

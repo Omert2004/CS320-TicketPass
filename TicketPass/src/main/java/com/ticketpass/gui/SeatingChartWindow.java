@@ -158,8 +158,14 @@ public class SeatingChartWindow extends JFrame {
         SeatingChart chartData = ticketPass.getSeatingChart(eventId);
 
         if (chartData == null || chartData.getSeats() == null || chartData.getSeats().isEmpty()) {
-            chartPanel.add(new JLabel("No seating data available for this venue."));
-            refreshUI();
+            if (isOrganizer) {
+                // If it's an organizer, trigger the generator popup!
+                promptForSeatGeneration();
+            } else {
+                // If it's a customer, just show the sad message
+                chartPanel.add(new JLabel("No seating data available for this venue yet. Check back later!"));
+                refreshUI();
+            }
             return;
         }
 
@@ -261,6 +267,45 @@ public class SeatingChartWindow extends JFrame {
                     }
                 }
             }
+        }
+    }
+
+    private void promptForSeatGeneration() {
+        JTextField txtRows = new JTextField("3");
+        JTextField txtCols = new JTextField("4");
+        Object[] message = {
+                "This event currently has no seats.",
+                "Please generate the initial arrangement.",
+                " ",
+                "Number of Rows (e.g. 3 = A, B, C):", txtRows,
+                "Seats per Row (Columns):", txtCols
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Generate Seating Arrangement", JOptionPane.OK_CANCEL_OPTION);
+
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int rows = Integer.parseInt(txtRows.getText().trim());
+                int cols = Integer.parseInt(txtCols.getText().trim());
+
+                // Call the backend method we created in the previous step
+                ticketPass.generateSeatingChart(eventId, rows, cols);
+
+                JOptionPane.showMessageDialog(this, "Successfully created " + (rows * cols) + " seats!");
+
+                // Magically refresh the window to draw your green buttons!
+                loadSeatingChart();
+
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Please enter valid integers.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                chartPanel.add(new JLabel("Seating generation failed due to invalid input."));
+                refreshUI();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error generating seats: " + ex.getMessage(), "System Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            chartPanel.add(new JLabel("Seat generation was cancelled."));
+            refreshUI();
         }
     }
 

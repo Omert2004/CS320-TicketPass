@@ -111,21 +111,28 @@ public class AdminManagementService {
     }
 
     public void generateSeatingChart(int eventId, int rows, int columns) {
-        String query = "INSERT INTO seats (eventId, rowLabel, seatNumber, status) VALUES (?, ?, ?, 'AVAILABLE')";
+        String insertSeatsQuery = "INSERT INTO seats (eventId, rowLabel, seatNumber, status) VALUES (?, ?, ?, 'AVAILABLE')";
+        String updateCapacityQuery = "UPDATE events SET venueCapacity = ? WHERE eventId = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+             PreparedStatement insertStmt = conn.prepareStatement(insertSeatsQuery);
+             PreparedStatement updateStmt = conn.prepareStatement(updateCapacityQuery)) {
 
             for (int r = 0; r < rows; r++) {
                 String rowLabel = String.valueOf((char) ('A' + r));
                 for (int c = 1; c <= columns; c++) {
-                    pstmt.setInt(1, eventId);
-                    pstmt.setString(2, rowLabel);
-                    pstmt.setInt(3, c);
-                    pstmt.addBatch();
+                    insertStmt.setInt(1, eventId);
+                    insertStmt.setString(2, rowLabel);
+                    insertStmt.setInt(3, c);
+                    insertStmt.addBatch();
                 }
             }
-            pstmt.executeBatch();
+            insertStmt.executeBatch();
+
+            int totalCapacity = rows * columns;
+            updateStmt.setInt(1, totalCapacity);
+            updateStmt.setInt(2, eventId);
+            updateStmt.executeUpdate();
 
         } catch (SQLException e) {
             e.printStackTrace();

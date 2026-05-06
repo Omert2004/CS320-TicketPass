@@ -24,6 +24,7 @@ public class OrganizerDashboardWindow extends JFrame {
     private JButton btnCancelEvent;
     private JButton btnViewSeats;
     private JButton btnViewStats;
+    private JButton btnRefresh;
     private JButton btnLogout;
     private JTextArea reportTextArea;
 
@@ -61,6 +62,7 @@ public class OrganizerDashboardWindow extends JFrame {
         btnCancelEvent = new JButton("Cancel Selected Event");
         btnViewSeats = new JButton("View/Manage Seats");
         btnViewStats = new JButton("Generate Sales Report");
+        btnRefresh = new JButton("Refresh");
         btnLogout = new JButton("Logout");
 
 
@@ -77,6 +79,7 @@ public class OrganizerDashboardWindow extends JFrame {
         topPanel.add(btnCancelEvent);
         topPanel.add(btnViewSeats);
         topPanel.add(btnViewStats);
+        topPanel.add(btnRefresh);
         topPanel.add(btnLogout);
         add(topPanel, BorderLayout.NORTH);
 
@@ -144,6 +147,10 @@ public class OrganizerDashboardWindow extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, "Please select an event to view its statistics.", "Warning", JOptionPane.WARNING_MESSAGE);
             }
+        });
+
+        btnRefresh.addActionListener(e -> {
+            loadOrganizerEvents();
         });
 
         btnLogout.addActionListener(e -> {
@@ -363,7 +370,5 @@ public class OrganizerDashboardWindow extends JFrame {
             };
             tableModel.addRow(row);
         }
-
-
     }
 }

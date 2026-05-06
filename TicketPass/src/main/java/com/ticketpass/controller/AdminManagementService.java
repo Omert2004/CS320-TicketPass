@@ -104,6 +104,36 @@ public class AdminManagementService {
         }
     }
 
+    public List<Event> getOrganizerEvents(int organizerId) {
+        List<Event> events = new ArrayList<>();
+        String query = "SELECT * FROM events WHERE organizerId = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, organizerId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Event event = new Event();
+                event.setEventId(rs.getInt("eventId"));
+                event.setOrganizerId(rs.getInt("organizerId"));
+                event.setName(rs.getString("name"));
+                event.setCategory(rs.getString("category"));
+                event.setEventDate(rs.getTimestamp("eventDate").toLocalDateTime());
+                event.setAddress(rs.getString("address"));
+                event.setVenueName(rs.getString("venueName"));
+                event.setVenueCapacity(rs.getInt("venueCapacity"));
+                event.setPrice(rs.getDouble("price"));
+                event.setStatus(EventStatus.valueOf(rs.getString("status").toUpperCase()));
+                events.add(event);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return events;
+    }
+
+
     // Returns all events regardless of status — used by AdminDashboardWindow
     public List<Event> getAllEvents(int adminId) {
         List<Event> events = new ArrayList<>();

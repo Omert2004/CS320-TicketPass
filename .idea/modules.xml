@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/CS320-TicketPass.iml" filepath="$PROJECT_DIR$/.idea/CS320-TicketPass.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TicketPass/TicketPass.iml" filepath="$PROJECT_DIR$/TicketPass/TicketPass.iml" />
     </modules>
   </component>
 </project>

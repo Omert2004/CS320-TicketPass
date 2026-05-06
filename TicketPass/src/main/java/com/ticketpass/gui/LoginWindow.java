@@ -95,8 +95,7 @@ public class LoginWindow extends JFrame {
                         new OrganizerDashboardWindow(ticketPass, user).setVisible(true);
                         break;
                     case ADMIN:
-                        // TODO: Create the AdminDashboardWindow
-                        // new AdminDashboardWindow(ticketPass, user).setVisible(true);
+                        new AdminDashboardWindow(ticketPass, user).setVisible(true);
                         JOptionPane.showMessageDialog(this, "Welcome Admin! Dashboard coming soon.");
                         break;
                     default:

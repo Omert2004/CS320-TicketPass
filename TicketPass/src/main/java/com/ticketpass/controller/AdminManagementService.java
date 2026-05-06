@@ -1,6 +1,7 @@
 package com.ticketpass.controller;
 
 import com.ticketpass.model.Event;
+import com.ticketpass.model.EventStatus;
 import com.ticketpass.model.Role;
 import com.ticketpass.model.User;
 import com.ticketpass.util.DatabaseManager;
@@ -32,7 +33,7 @@ public class AdminManagementService {
     }
 
     public void updateEvent(int adminId, int eventId, Event eventData) {
-        String query = "{CALL sp_editEvent(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        String query = "{CALL sp_editEvent(?, ?, ?, ?, ?, ?, ?)}";
         try (Connection conn = DatabaseManager.getConnection();
              CallableStatement stmt = conn.prepareCall(query)) {
 
@@ -42,10 +43,7 @@ public class AdminManagementService {
             stmt.setString(4, eventData.getCategory());
             stmt.setTimestamp(5, Timestamp.valueOf(eventData.getEventDate()));
             stmt.setString(6, eventData.getAddress());
-            stmt.setString(7, eventData.getVenueName());
-            stmt.setDouble(8, eventData.getPrice());
-            stmt.setInt(9, eventData.getVenueCapacity());
-            stmt.setString(10, eventData.getStatus().toString());
+            stmt.setDouble(7, eventData.getPrice());
 
             stmt.execute();
         } catch (SQLException e) {
@@ -92,40 +90,6 @@ public class AdminManagementService {
         }
     }
 
-    public List<Event> getOrganizerEvents(int organizerId) {
-        List<Event> events = new ArrayList<>();
-        String query = "{CALL sp_getOrganizerEvents(?)}";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             CallableStatement stmt = conn.prepareCall(query)) {
-
-            stmt.setInt(1, organizerId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Event event = new Event();
-                    event.setEventId(rs.getInt("eventId"));
-                    event.setOrganizerId(rs.getInt("organizerId"));
-                    event.setName(rs.getString("name"));
-                    event.setCategory(rs.getString("category"));
-                    if (rs.getTimestamp("eventDate") != null) {
-                        event.setEventDate(rs.getTimestamp("eventDate").toLocalDateTime());
-                    }
-                    event.setAddress(rs.getString("address"));
-                    event.setVenueName(rs.getString("venueName"));
-                    event.setVenueCapacity(rs.getInt("venueCapacity"));
-                    event.setPrice(rs.getDouble("price"));
-                    event.setStatus(com.ticketpass.model.EventStatus.valueOf(rs.getString("status").toUpperCase()));
-
-                    events.add(event);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return events;
-    }
-
     public void updateSeatAvailability(int adminId, int seatId, String status) {
         String query = "{CALL sp_updateSeatAvailability(?, ?, ?)}";
         try (Connection conn = DatabaseManager.getConnection();
@@ -138,6 +102,39 @@ public class AdminManagementService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    // Returns all events regardless of status — used by AdminDashboardWindow
+    public List<Event> getAllEvents(int adminId) {
+        List<Event> events = new ArrayList<>();
+        String query = "SELECT * FROM events";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Event event = new Event();
+                event.setEventId(rs.getInt("eventId"));
+                event.setOrganizerId(rs.getInt("organizerId"));
+                event.setName(rs.getString("name"));
+                event.setCategory(rs.getString("category"));
+                event.setEventDate(rs.getTimestamp("eventDate").toLocalDateTime());
+                event.setAddress(rs.getString("address"));
+                event.setVenueName(rs.getString("venueName"));
+                event.setVenueCapacity(rs.getInt("venueCapacity"));
+                event.setPrice(rs.getDouble("price"));
+                event.setStatus(EventStatus.valueOf(rs.getString("status").toUpperCase()));
+                events.add(event);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return events;
+    }
+
+    // Returns all users — used by AdminDashboardWindow
+    public List<User> getUserList(int adminId) {
+        return getAllUsers();
     }
 
     public List<User> getAllUsers() {
@@ -158,7 +155,7 @@ public class AdminManagementService {
                         userRole,
                         rs.getBoolean("isLocked"),
                         rs.getInt("failedAttempts"),
-                        null // CreatedAt can be mapped if added to User model
+                        null
                 );
                 users.add(user);
             }
@@ -166,5 +163,31 @@ public class AdminManagementService {
             e.printStackTrace();
         }
         return users;
+    }
+
+    // Lock a user account (SRS-TP-010)
+    public void lockUserAccount(int adminId, int targetUserId) {
+        String query = "{CALL sp_lockAccount(?)}";
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query)) {
+
+            stmt.setInt(1, targetUserId);
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Unlock a user account (SRS-TP-010)
+    public void unlockUserAccount(int adminId, int targetUserId) {
+        String query = "{CALL sp_resetFailedAttempts(?)}";
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query)) {
+
+            stmt.setInt(1, targetUserId);
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

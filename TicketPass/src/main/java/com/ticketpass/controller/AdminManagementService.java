@@ -12,7 +12,7 @@ import java.util.List;
 
 public class AdminManagementService {
 
-    public void createEvent(int adminId, Event eventData) {
+    public int createEvent(int adminId, Event eventData) {
         String query = "{CALL sp_createEvent(?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection conn = DatabaseManager.getConnection();
              CallableStatement stmt = conn.prepareCall(query)) {
@@ -26,6 +26,24 @@ public class AdminManagementService {
             stmt.setInt(7, eventData.getVenueCapacity());
             stmt.setDouble(8, eventData.getPrice());
 
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("newEventId");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public void generateSeats(int adminId, int eventId, int rowCount, int seatsPerRow) {
+        String query = "{CALL sp_generateSeats(?, ?, ?)}";
+        try (Connection conn = DatabaseManager.getConnection();
+             CallableStatement stmt = conn.prepareCall(query)) {
+
+            stmt.setInt(1, eventId);
+            stmt.setInt(2, rowCount);
+            stmt.setInt(3, seatsPerRow);
             stmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();

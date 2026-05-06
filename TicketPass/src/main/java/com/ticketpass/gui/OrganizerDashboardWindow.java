@@ -164,8 +164,9 @@ public class OrganizerDashboardWindow extends JFrame {
 
         JTextField txtVenue = new JTextField();
         JTextField txtAddress = new JTextField();
-        JTextField txtCapacity = new JTextField();
         JTextField txtPrice = new JTextField();
+        JTextField txtRows        = new JTextField();
+        JTextField txtSeatsPerRow = new JTextField();
 
         Object[] message = {
                 "Event Name:", txtName,
@@ -173,9 +174,11 @@ public class OrganizerDashboardWindow extends JFrame {
                 "Date (MMM dd, yyyy - HH:mm):", txtDate,
                 "Venue:", txtVenue,
                 "Address:", txtAddress,
-                "Capacity:", txtCapacity,
-                "Price:", txtPrice
+                "Price:", txtPrice,
+                "Number of Rows:", txtRows,
+                "Seats Per Row:", txtSeatsPerRow
         };
+
 
         int option = JOptionPane.showConfirmDialog(this, message, "Create New Event", JOptionPane.OK_CANCEL_OPTION);
 
@@ -194,16 +197,25 @@ public class OrganizerDashboardWindow extends JFrame {
                 if (rawPrice.isEmpty()) rawPrice = "0";
                 newEvent.setPrice(Double.parseDouble(rawPrice));
 
-                String rawCapacity = txtCapacity.getText().replace(".", "").replace(",", "").trim();
-                if (rawCapacity.isEmpty()) rawCapacity = "0";
-                newEvent.setVenueCapacity(Integer.parseInt(rawCapacity));
+                int rowCount    = Integer.parseInt(txtRows.getText().trim().isEmpty() ? "0" : txtRows.getText().trim());
+                int seatsPerRow = Integer.parseInt(txtSeatsPerRow.getText().trim().isEmpty() ? "0" : txtSeatsPerRow.getText().trim());
+                int capacity    = rowCount * seatsPerRow;
+                newEvent.setVenueCapacity(capacity);
 
                 newEvent.setEventDate(LocalDateTime.parse(txtDate.getText().trim(), formatter));
 
-                ticketPass.createNewEvent(currentUser, newEvent);
+                int newEventId = ticketPass.createNewEvent(currentUser, newEvent);
+
+                String rawRows = txtRows.getText().trim();
+                String rawSeats = txtSeatsPerRow.getText().trim();
+
+                if (!rawRows.isEmpty() && !rawSeats.isEmpty() && newEventId > 0) {
+                    rowCount    = Integer.parseInt(rawRows);
+                    seatsPerRow = Integer.parseInt(rawSeats);
+                    ticketPass.generateSeats(currentUser, newEventId, rowCount, seatsPerRow);
+                }
 
                 JOptionPane.showMessageDialog(this, "Event Created Successfully!");
-
                 // Refresh tabl
                 loadOrganizerEvents();
 
@@ -342,5 +354,7 @@ public class OrganizerDashboardWindow extends JFrame {
             };
             tableModel.addRow(row);
         }
+
+
     }
 }

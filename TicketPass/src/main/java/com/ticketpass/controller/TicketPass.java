@@ -103,9 +103,16 @@ public class TicketPass {
         return historyService.getUserBookings(userId);
     }
 
-    public void createNewEvent(User currentUser, Event eventData) {
+    public int createNewEvent(User currentUser, Event eventData) {
         if (currentUser != null && (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.ORGANIZER)) {
-            adminService.createEvent(currentUser.getUserId(), eventData);
+            return adminService.createEvent(currentUser.getUserId(), eventData);
+        }
+        return -1;
+    }
+
+    public void generateSeats(User currentUser, int eventId, int rowCount, int seatsPerRow) {
+        if (currentUser != null && (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.ORGANIZER)) {
+            adminService.generateSeats(currentUser.getUserId(), eventId, rowCount, seatsPerRow);
         }
     }
 

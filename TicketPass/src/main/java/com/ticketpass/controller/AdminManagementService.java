@@ -185,11 +185,12 @@ public class AdminManagementService {
     // Returns all events regardless of status — used by AdminDashboardWindow
     public List<Event> getAllEvents(int adminId) {
         List<Event> events = new ArrayList<>();
-        String query = "SELECT * FROM events";
+        String query = "{CALL sp_getAllEvents(?)}";
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+             CallableStatement stmt = conn.prepareCall(query)) {
 
+            stmt.setInt(1, adminId);
+            ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Event event = new Event();
                 event.setEventId(rs.getInt("eventId"));

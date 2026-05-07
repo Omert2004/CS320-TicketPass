@@ -303,6 +303,12 @@ BEGIN
     SELECT * FROM events WHERE organizerId = p_organizerId ORDER BY eventDate ASC;
 END$$
 
+DROP PROCEDURE IF EXISTS sp_getAllEvents$$
+CREATE PROCEDURE sp_getAllEvents(IN p_adminId INT)
+BEGIN
+    SELECT * FROM events ORDER BY eventDate DESC;
+END$$
+
 DELIMITER ;
 
 -- Scheduled event: auto-release expired locks every minute (SRS-TP-003.1)

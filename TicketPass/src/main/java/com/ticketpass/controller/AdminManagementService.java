@@ -155,13 +155,12 @@ public class AdminManagementService {
 
     public List<Event> getOrganizerEvents(int organizerId) {
         List<Event> events = new ArrayList<>();
-        String query = "SELECT * FROM events WHERE organizerId = ?";
+        String query = "{CALL sp_getOrganizerEvents(?)}";
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             CallableStatement stmt = conn.prepareCall(query)) {
 
             stmt.setInt(1, organizerId);
             ResultSet rs = stmt.executeQuery();
-
             while (rs.next()) {
                 Event event = new Event();
                 event.setEventId(rs.getInt("eventId"));

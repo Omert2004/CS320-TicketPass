@@ -60,7 +60,8 @@ public class TicketPass {
     }
 
     public List<Event> getOrganizerEvents(int organizerId) {
-        return adminService.getOrganizerEvents(organizerId);
+        return adminService.getOrganizerEvents
+                (organizerId);
     }
 
     public List<Event> searchEvents(String category, Date date, String location, double price, String artist) {

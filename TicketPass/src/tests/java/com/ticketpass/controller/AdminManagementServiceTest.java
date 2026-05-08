@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+//Covers requirements: T-SRS-TP-004, 005, 006, 10,2
 public class AdminManagementServiceTest {
 
     private AdminManagementService service;
@@ -26,7 +27,8 @@ public class AdminManagementServiceTest {
         organizerId = 2; // seed: organizer1 userId=2
     }
 
-    // T-SRS-TP-004 — getAllEvents returns non-null list
+    // T-SRS-TP-004 - Unit Tests
+
     @Test
     @DisplayName("T-SRS-TP-004: getAllEvents returns a non-null list for admin")
     public void getAllEvents_AdminId_ReturnsNonNullList() {
@@ -34,39 +36,6 @@ public class AdminManagementServiceTest {
         assertNotNull(events, "getAllEvents should never return null.");
     }
 
-    // T-SRS-TP-005 — getOrganizerEvents returns only that organizer's events
-    @Test
-    @DisplayName("T-SRS-TP-005: getOrganizerEvents returns only events belonging to the organizer")
-    public void getOrganizerEvents_ValidOrganizerId_ReturnsCorrectEvents() {
-        List<Event> events = service.getOrganizerEvents(organizerId);
-        assertNotNull(events);
-        for (Event e : events) {
-            assertEquals(organizerId, e.getOrganizerId(),
-                    "Every returned event should belong to organizerId=" + organizerId);
-        }
-    }
-
-    // T-SRS-TP-005 — createEvent inserts a new event
-    @Test
-    @DisplayName("T-SRS-TP-005: createEvent inserts event and returns a valid eventId")
-    public void createEvent_ValidData_ReturnsPositiveEventId() {
-        Event event = new Event();
-        event.setName("Unit Test Event");
-        event.setCategory("Music");
-        event.setEventDate(LocalDateTime.now().plusMonths(2));
-        event.setAddress("Test Address, Istanbul");
-        event.setVenueName("Test Venue");
-        event.setVenueCapacity(100);
-        event.setPrice(150.00);
-
-        int newEventId = service.createEvent(organizerId, event);
-        assertTrue(newEventId > 0, "createEvent should return a positive eventId after insertion.");
-
-        // Cleanup
-        service.deleteEvent(adminId, newEventId);
-    }
-
-    // T-SRS-TP-004 — approveEvent changes status to ACTIVE
     @Test
     @DisplayName("T-SRS-TP-004: approveEvent sets event status to ACTIVE")
     public void approveEvent_PendingEvent_StatusBecomesActive() {
@@ -82,22 +51,49 @@ public class AdminManagementServiceTest {
 
         int eventId = service.createEvent(organizerId, event);
         assertTrue(eventId > 0);
-
-        // Approve it
         assertDoesNotThrow(() -> service.approveEvent(adminId, eventId));
 
-        // Verify
         List<Event> all = service.getAllEvents(adminId);
         Event approved = all.stream().filter(e -> e.getEventId() == eventId).findFirst().orElse(null);
+
         assertNotNull(approved);
         assertEquals(EventStatus.ACTIVE, approved.getStatus(),
                 "Event status should be ACTIVE after approval.");
 
-        // Cleanup
         service.deleteEvent(adminId, eventId);
     }
 
-    // T-SRS-TP-005 — cancelEvent changes status to CANCELLED
+    // T-SRS-TP-005 - Unit Tests
+
+    @Test
+    @DisplayName("T-SRS-TP-005: getOrganizerEvents returns only events belonging to the organizer")
+    public void getOrganizerEvents_ValidOrganizerId_ReturnsCorrectEvents() {
+        List<Event> events = service.getOrganizerEvents(organizerId);
+        assertNotNull(events);
+        for (Event e : events) {
+            assertEquals(organizerId, e.getOrganizerId(),
+                    "Every returned event should belong to organizerId=" + organizerId);
+        }
+    }
+
+    @Test
+    @DisplayName("T-SRS-TP-005: createEvent inserts event and returns a valid eventId")
+    public void createEvent_ValidData_ReturnsPositiveEventId() {
+        Event event = new Event();
+        event.setName("Unit Test Event");
+        event.setCategory("Music");
+        event.setEventDate(LocalDateTime.now().plusMonths(2));
+        event.setAddress("Test Address, Istanbul");
+        event.setVenueName("Test Venue");
+        event.setVenueCapacity(100);
+        event.setPrice(150.00);
+
+        int newEventId = service.createEvent(organizerId, event);
+        assertTrue(newEventId > 0, "createEvent should return a positive eventId after insertion.");
+
+        service.deleteEvent(adminId, newEventId);
+    }
+
     @Test
     @DisplayName("T-SRS-TP-005: cancelEvent sets event status to CANCELLED")
     public void cancelEvent_ActiveEvent_StatusBecomesCancelled() {
@@ -122,11 +118,9 @@ public class AdminManagementServiceTest {
         assertEquals(EventStatus.CANCELLED, cancelled.getStatus(),
                 "Event status should be CANCELLED after cancellation.");
 
-        // Cleanup
         service.deleteEvent(adminId, eventId);
     }
 
-    // T-SRS-TP-005 — deleteEvent removes the event
     @Test
     @DisplayName("T-SRS-TP-005: deleteEvent removes the event from database")
     public void deleteEvent_ExistingEvent_EventNoLongerExists() {
@@ -149,7 +143,8 @@ public class AdminManagementServiceTest {
         assertFalse(stillExists, "Deleted event should no longer exist in the database.");
     }
 
-    // T-SRS-TP-006 — generateSeatingChart inserts correct number of seats
+    // T-SRS-TP-006 - Unit Tests
+
     @Test
     @DisplayName("T-SRS-TP-006: generateSeatingChart inserts rowCount x seatsPerRow seats")
     public void generateSeatingChart_ValidParams_InsertsCorrectSeatCount() {
@@ -169,11 +164,11 @@ public class AdminManagementServiceTest {
         int cols = 10;
         assertDoesNotThrow(() -> service.generateSeatingChart(eventId, rows, cols));
 
-        // Cleanup
         service.deleteEvent(adminId, eventId);
     }
 
-    // T-SRS-TP-010.2 — getUserList returns non-null list
+    // T-SRS-TP-0010.2 - Unit Tests
+
     @Test
     @DisplayName("T-SRS-TP-010.2: getUserList returns a non-null list")
     public void getUserList_AdminId_ReturnsNonNullList() {
@@ -182,7 +177,6 @@ public class AdminManagementServiceTest {
         assertFalse(users.isEmpty(), "getUserList should return at least the seed users.");
     }
 
-    // T-SRS-TP-010.2 — lockUserAccount and unlockUserAccount work without exception
     @Test
     @DisplayName("T-SRS-TP-010.2: lockUserAccount and unlockUserAccount execute without exception")
     public void lockAndUnlockUserAccount_ValidUserId_NoException() {

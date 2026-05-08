@@ -9,22 +9,26 @@ import org.junit.jupiter.api.DisplayName;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
-// Covers requirements: T-SRS-TP-001.4, T-SRS-TP-010.2
+// Covers requirements: T-SRS-TP-001.4
 public class AuthenticationIntegrationTest {
 
     private TicketPass ticketPass;
 
     @BeforeEach
     public void setup() {
+        BookingHistoryService historyService = new BookingHistoryService();
+        QRCodeService qrCodeService = new QRCodeService(historyService);
+        PdfTicketService pdfTicketService = new PdfTicketService(qrCodeService, historyService);
+
         ticketPass = new TicketPass(
                 new EventBrowsingService(),
                 new SeatReservationService(),
                 new PaymentAndTicketingService(),
-                null,                       // QRCodeService null
-                null,                                // PdfTicketService
+                qrCodeService,
+                pdfTicketService,
                 new AdminManagementService(),
                 new ReportingService(),
-                new BookingHistoryService()
+                historyService
         );
     }
 

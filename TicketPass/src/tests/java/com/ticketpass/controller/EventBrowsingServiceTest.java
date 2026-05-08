@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
+// Covers requirements: T-SRS-TP-001.1, 001.3
 public class EventBrowsingServiceTest {
 
     private EventBrowsingService browsingService;

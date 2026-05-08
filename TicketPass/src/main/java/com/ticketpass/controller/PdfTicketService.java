@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+// Covers requirements: T-SRS-TP-003.3
 public class PdfTicketService {
 
     private QRCodeService qrCodeService;

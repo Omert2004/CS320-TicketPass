@@ -159,10 +159,10 @@ public class SeatingChartWindow extends JFrame {
 
         if (chartData == null || chartData.getSeats() == null || chartData.getSeats().isEmpty()) {
             if (isOrganizer) {
-                // If it's an organizer, trigger the generator popup!
+                // If it's an organizer
                 promptForSeatGeneration();
             } else {
-                // If it's a customer, just show the sad message
+                // If it's a customer
                 chartPanel.add(new JLabel("No seating data available for this venue yet. Check back later!"));
                 refreshUI();
             }

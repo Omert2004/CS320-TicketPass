@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.sql.*;
 import java.util.List;
 
-// Covers: T-SRS-TP-003.1 (Transaction Timeout) and T-SRS-TP-003.2 (Secure Payment)
+// Covers requirements: T-SRS-TP-003.2, 003.3
 public class PaymentSecurityTest {
 
     private SeatReservationService seatService;
@@ -36,17 +36,13 @@ public class PaymentSecurityTest {
         seatService.releaseSeatLock(TEST_SEAT_ID);
     }
 
-    // -------------------------------------------------------
-    //  T-SRS-TP-003.1: Transaction Timeout — seat lock state
-    // -------------------------------------------------------
-
     @Test
     @DisplayName("T-SRS-TP-003.1: Seat transitions to LOCKED state upon selection")
     public void lockSeat_AvailableSeat_SeatBecomesLocked() {
         boolean locked = seatService.lockSeat(TEST_SEAT_ID, TEST_USER_ID);
+
         assertTrue(locked, "Seat should be successfully locked.");
 
-        // Verify status in DB
         String status = getSeatStatusFromDB(TEST_SEAT_ID);
         assertEquals("LOCKED", status, "Seat status in DB should be LOCKED after selection.");
     }
@@ -70,7 +66,6 @@ public class PaymentSecurityTest {
             long expiresMs = lockExpires.getTime();
             long diffMinutes = (expiresMs - nowMs) / 60000;
 
-            // Should be ~10 minutes (allow 8-12 min range for test latency)
             assertTrue(diffMinutes >= 8 && diffMinutes <= 12,
                     "lockExpires should be ~10 minutes from now, but was " + diffMinutes + " minutes.");
         } catch (SQLException e) {
@@ -104,10 +99,9 @@ public class PaymentSecurityTest {
             fail("Could not set up expired lock: " + e.getMessage());
         }
 
-        // Verify it's locked
         assertEquals("LOCKED", getSeatStatusFromDB(TEST_SEAT_ID));
 
-        // Call the stored procedure
+
         try (Connection conn = DatabaseManager.getConnection();
              CallableStatement stmt = conn.prepareCall("{CALL sp_releaseExpiredLocks()}")) {
             stmt.execute();

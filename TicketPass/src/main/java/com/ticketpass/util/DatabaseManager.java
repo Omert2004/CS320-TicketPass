@@ -9,7 +9,7 @@ public class DatabaseManager {
 
     private static final String URL = "jdbc:mysql://localhost:3306/ticketpass";
     private static final String USER = "root";
-    private static final String PASSWORD = "**Aa445566";
+    private static final String PASSWORD = "_9q@2$KNf>xpVyW-;5)o";
     public static Connection getConnection() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");

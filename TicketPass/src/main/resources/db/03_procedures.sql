@@ -99,9 +99,10 @@ END$$
 DROP PROCEDURE IF EXISTS sp_deleteEvent$$
 CREATE PROCEDURE sp_deleteEvent(IN p_adminId INT, IN p_eventId INT)
 BEGIN
+    DELETE FROM seats WHERE eventId = p_eventId;
     DELETE FROM events WHERE eventId=p_eventId;
 END$$
-
+f
 DROP PROCEDURE IF EXISTS sp_approveEvent$$
 CREATE PROCEDURE sp_approveEvent(IN p_adminId INT, IN p_eventId INT)
 BEGIN
